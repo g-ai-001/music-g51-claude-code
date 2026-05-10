@@ -186,6 +186,7 @@ fun MainContent() {
                     onNext = { playerViewModel.playNext() },
                     onPrevious = { playerViewModel.playPrevious() },
                     onSeekTo = { playerViewModel.seekTo(it) },
+                    onSeeking = { playerViewModel.onSeeking(it) },
                     onToggleFavorite = { playerViewModel.toggleFavorite() },
                     onToggleLyrics = { playerViewModel.toggleLyrics() }
                 )

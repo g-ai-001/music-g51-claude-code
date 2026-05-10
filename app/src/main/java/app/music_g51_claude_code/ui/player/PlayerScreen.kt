@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +39,7 @@ fun PlayerScreen(
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onSeekTo: (Long) -> Unit,
+    onSeeking: (Long) -> Unit,
     onToggleFavorite: () -> Unit,
     onToggleLyrics: () -> Unit,
     modifier: Modifier = Modifier
@@ -82,6 +82,7 @@ fun PlayerScreen(
                     onNext = onNext,
                     onPrevious = onPrevious,
                     onSeekTo = onSeekTo,
+                    onSeeking = onSeeking,
                     lyrics = state.lyrics,
                     currentLyricIndex = state.currentLyricIndex,
                     modifier = Modifier.weight(1f)
@@ -187,6 +188,7 @@ private fun CoverMode(
     onNext: () -> Unit,
     onPrevious: () -> Unit,
     onSeekTo: (Long) -> Unit,
+    onSeeking: (Long) -> Unit,
     lyrics: List<LyricLine>,
     currentLyricIndex: Int,
     modifier: Modifier = Modifier
@@ -237,9 +239,20 @@ private fun CoverMode(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        var sliderPosition by remember { mutableStateOf<Long?>(null) }
+
         Slider(
-            value = if (duration > 0) position.toFloat() / duration else 0f,
-            onValueChange = { ratio -> onSeekTo((ratio * duration).toLong()) },
+            value = sliderPosition?.let { if (duration > 0) it.toFloat() / duration else 0f }
+                ?: if (duration > 0) position.toFloat() / duration else 0f,
+            onValueChange = { ratio ->
+                val pos = (ratio * duration).toLong()
+                sliderPosition = pos
+                onSeeking(pos)
+            },
+            onValueChangeFinished = {
+                sliderPosition?.let { onSeekTo(it) }
+                sliderPosition = null
+            },
             modifier = Modifier.fillMaxWidth(),
             colors = SliderDefaults.colors(
                 thumbColor = Color.White,

@@ -13,5 +13,6 @@ data class PlayerState(
     val isFavorite: Boolean = false,
     val lyrics: List<LyricLine> = emptyList(),
     val currentLyricIndex: Int = -1,
-    val showLyrics: Boolean = false
+    val showLyrics: Boolean = false,
+    val isSeeking: Boolean = false
 )
