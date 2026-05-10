@@ -1,6 +1,7 @@
 package app.music_g51_claude_code.service
 
 import android.content.Intent
+import android.net.Uri
 import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.*
@@ -31,8 +32,12 @@ class MusicPlaybackService : MediaSessionService() {
                     mediaItems: MutableList<MediaItem>
                 ): ListenableFuture<MutableList<MediaItem>> {
                     val resolved = mediaItems.map { item ->
-                        item.buildUpon()
-                            .setUri(item.requestMetadata.mediaUri ?: item.mediaUri)
+                        val uri = item.requestMetadata.mediaUri
+                            ?: Uri.parse(item.mediaId)
+                        MediaItem.Builder()
+                            .setMediaId(item.mediaId)
+                            .setUri(uri)
+                            .setMediaMetadata(item.mediaMetadata)
                             .build()
                     }.toMutableList()
                     return Futures.immediateFuture(resolved)

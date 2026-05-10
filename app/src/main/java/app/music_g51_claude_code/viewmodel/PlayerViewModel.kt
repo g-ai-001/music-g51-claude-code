@@ -2,7 +2,6 @@ package app.music_g51_claude_code.viewmodel
 
 import android.content.ComponentName
 import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -15,7 +14,7 @@ import app.music_g51_claude_code.data.repository.MusicRepository
 import app.music_g51_claude_code.service.MusicPlaybackService
 import app.music_g51_claude_code.utils.AppLogger
 import app.music_g51_claude_code.utils.LyricParser
-import com.google.common.util.concurrent.ListenableFuture
+import java.util.concurrent.Future
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,7 +26,7 @@ class PlayerViewModel(
     private val _state = MutableStateFlow(PlayerState())
     val state: StateFlow<PlayerState> = _state.asStateFlow()
 
-    private var mediaControllerFuture: ListenableFuture<MediaController>? = null
+    private var mediaControllerFuture: Future<out MediaController>? = null
     private var mediaController: MediaController? = null
     private var positionJob: Job? = null
     private var lyricJob: Job? = null
@@ -61,7 +60,7 @@ class PlayerViewModel(
 
         val mediaItems = playlist.map { s ->
             MediaItem.Builder()
-                .setUri(Uri.parse(s.path))
+                .setUri(s.path)
                 .setMediaId(s.id.toString())
                 .setMediaMetadata(
                     androidx.media3.common.MediaMetadata.Builder()

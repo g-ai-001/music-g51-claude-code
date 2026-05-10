@@ -359,6 +359,7 @@ private fun LyricsMode(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomControls(
     showLyrics: Boolean,
