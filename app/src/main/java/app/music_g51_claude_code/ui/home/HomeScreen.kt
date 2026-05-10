@@ -18,23 +18,38 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.music_g51_claude_code.data.entity.Playlist
 import app.music_g51_claude_code.data.entity.Song
 import coil.compose.AsyncImage
-import app.music_g51_claude_code.ui.theme.TextSecondary
+
+enum class HomeTab(val label: String) {
+    RECOMMEND("推荐"),
+    PLAYLISTS("歌单"),
+    ARTISTS("歌手"),
+    ALBUMS("专辑")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     songs: List<Song>,
+    playlists: List<Playlist>,
+    artists: List<String>,
+    albums: List<String>,
     searchQuery: String,
     isLoading: Boolean,
     onSearch: (String) -> Unit,
     onRefresh: () -> Unit,
     onSongClick: (Song, List<Song>) -> Unit,
+    onPlaylistClick: (Playlist) -> Unit,
+    onArtistClick: (String) -> Unit,
+    onAlbumClick: (String) -> Unit,
+    onCreatePlaylist: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showSearch by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf(searchQuery) }
+    var selectedTab by remember { mutableStateOf(HomeTab.RECOMMEND) }
 
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
@@ -72,22 +87,56 @@ fun HomeScreen(
             )
         )
 
+        ScrollableTabRow(
+            selectedTabIndex = selectedTab.ordinal,
+            edgePadding = 16.dp,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.primary
+        ) {
+            HomeTab.entries.forEach { tab ->
+                Tab(
+                    selected = selectedTab == tab,
+                    onClick = { selectedTab = tab },
+                    text = { Text(tab.label) }
+                )
+            }
+        }
+
         if (isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        } else if (songs.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("未找到本地音乐", color = TextSecondary)
-            }
         } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 4.dp)
-            ) {
-                items(songs, key = { it.id }) { song ->
-                    SongItem(song = song, onClick = { onSongClick(song, songs) })
-                }
+            when (selectedTab) {
+                HomeTab.RECOMMEND -> SongList(songs = songs, onSongClick = onSongClick)
+                HomeTab.PLAYLISTS -> PlaylistTab(
+                    playlists = playlists,
+                    onPlaylistClick = onPlaylistClick,
+                    onCreatePlaylist = onCreatePlaylist
+                )
+                HomeTab.ARTISTS -> ArtistList(artists = artists, onArtistClick = onArtistClick)
+                HomeTab.ALBUMS -> AlbumList(albums = albums, onAlbumClick = onAlbumClick)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SongList(
+    songs: List<Song>,
+    onSongClick: (Song, List<Song>) -> Unit
+) {
+    if (songs.isEmpty()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("未找到本地音乐", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 4.dp)
+        ) {
+            items(songs, key = { it.id }) { song ->
+                SongItem(song = song, onClick = { onSongClick(song, songs) })
             }
         }
     }
@@ -127,7 +176,7 @@ fun SongItem(
             Text(
                 text = song.artist,
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -136,8 +185,166 @@ fun SongItem(
         Text(
             text = formatDuration(song.duration),
             style = MaterialTheme.typography.labelSmall,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
+    }
+}
+
+@Composable
+private fun PlaylistTab(
+    playlists: List<Playlist>,
+    onPlaylistClick: (Playlist) -> Unit,
+    onCreatePlaylist: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onCreatePlaylist)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    modifier = Modifier.size(48.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.padding(12.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("新建歌单", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        items(playlists, key = { it.id }) { playlist ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onPlaylistClick(playlist) }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    modifier = Modifier.size(48.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Icon(
+                        Icons.Default.QueueMusic,
+                        contentDescription = null,
+                        modifier = Modifier.padding(12.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(playlist.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArtistList(
+    artists: List<String>,
+    onArtistClick: (String) -> Unit
+) {
+    if (artists.isEmpty()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("未找到歌手", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 4.dp)
+        ) {
+            items(artists) { artist ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onArtistClick(artist) }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.padding(12.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(artist, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AlbumList(
+    albums: List<String>,
+    onAlbumClick: (String) -> Unit
+) {
+    if (albums.isEmpty()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("未找到专辑", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 4.dp)
+        ) {
+            items(albums) { album ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onAlbumClick(album) }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Icon(
+                            Icons.Default.Album,
+                            contentDescription = null,
+                            modifier = Modifier.padding(12.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(album, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    )
+                }
+            }
+        }
     }
 }
 

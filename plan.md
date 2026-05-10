@@ -20,13 +20,16 @@
 - [x] 修复AndroidManifest中POST_NOTIFICATIONS权限缺失
 - [x] 修复MusicPlaybackService前台通知未创建问题
 - [x] 优化播放器进度条拖动体验
-- [x] 代码审查与重构优化</think><tool_call>Read<arg_key>file_path</arg_key><arg_value>/opt/cloud/data/claude-code/music-g51-claude-code/README.md
+- [x] 代码审查与重构优化
 
 ### v0.2.0 (MINOR) - 歌单与歌手
-- 歌单管理 (创建/删除/编辑歌单, 歌单详情页)
-- 歌手浏览页
-- 专辑浏览页
-- 深色模式支持
+- [ ] 首页Tab切换 (推荐/歌单/歌手/专辑)
+- [ ] 歌单管理 (创建歌单, 删除歌单, 重命名歌单)
+- [ ] 歌单详情页 (查看歌单歌曲, 添加歌曲到歌单, 从歌单移除歌曲)
+- [ ] 歌手浏览页 (歌手列表, 歌手详情页)
+- [ ] 专辑浏览页 (专辑列表, 专辑详情页)
+- [ ] 深色/浅色模式切换 (跟随系统/手动切换)
+- [ ] 升级版本号至0.2.0
 
 ### v0.3.0 (MINOR) - 体验优化
 - 播放模式 (顺序/随机/单曲循环)

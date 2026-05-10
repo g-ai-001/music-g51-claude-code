@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.music_g51_claude_code.data.entity.Song
 import app.music_g51_claude_code.ui.theme.AccentGreen
+import app.music_g51_claude_code.ui.theme.ThemeMode
 import coil.compose.AsyncImage
 
 @Composable
@@ -27,6 +28,8 @@ fun MeScreen(
     favoriteSongs: List<Song>,
     localSongCount: Int,
     onSongClick: (Song, List<Song>) -> Unit,
+    themeMode: ThemeMode,
+    onThemeChange: (ThemeMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -35,6 +38,10 @@ fun MeScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         StatsGrid(favoriteCount = favoriteSongs.size, localCount = localSongCount)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        ThemeSwitchSection(currentTheme = themeMode, onThemeChange = onThemeChange)
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -53,6 +60,50 @@ fun MeScreen(
             ) {
                 items(favoriteSongs.take(10)) { song ->
                     FavoriteCard(song = song, onClick = { onSongClick(song, favoriteSongs) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeSwitchSection(currentTheme: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.DarkMode,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text("主题模式", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                ThemeMode.entries.forEach { mode ->
+                    FilterChip(
+                        selected = currentTheme == mode,
+                        onClick = { onThemeChange(mode) },
+                        label = {
+                            Text(
+                                when (mode) {
+                                    ThemeMode.SYSTEM -> "系统"
+                                    ThemeMode.LIGHT -> "浅色"
+                                    ThemeMode.DARK -> "深色"
+                                },
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                    )
                 }
             }
         }

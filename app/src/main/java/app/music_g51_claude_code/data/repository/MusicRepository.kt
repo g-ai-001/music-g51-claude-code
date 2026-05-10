@@ -37,6 +37,7 @@ class MusicRepository private constructor(context: Context) {
 
     suspend fun getAllPlaylists(): List<Playlist> = playlistDao.getAllPlaylists()
     suspend fun createPlaylist(name: String): Long = playlistDao.insert(Playlist(name = name))
+    suspend fun updatePlaylist(playlist: Playlist) = playlistDao.update(playlist)
     suspend fun deletePlaylist(playlist: Playlist) = playlistDao.delete(playlist)
     suspend fun addSongToPlaylist(playlistId: Long, songId: Long) {
         val count = playlistDao.getSongCountForPlaylist(playlistId)
