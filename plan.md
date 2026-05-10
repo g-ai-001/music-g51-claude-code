@@ -16,11 +16,11 @@
 - [ ] 歌单管理
 
 ### v0.1.1 (PATCH) - 修复编译错误与代码优化
-- [ ] 修复PlayerViewModel编译错误 (Smart cast和类型不匹配)
-- [ ] 修复AndroidManifest中POST_NOTIFICATIONS权限缺失
-- [ ] 修复MusicPlaybackService前台通知未创建问题
-- [ ] 优化播放器进度条拖动体验
-- [ ] 代码审查与重构优化
+- [x] 修复PlayerViewModel编译错误 (Smart cast和类型不匹配)
+- [x] 修复AndroidManifest中POST_NOTIFICATIONS权限缺失
+- [x] 修复MusicPlaybackService前台通知未创建问题
+- [x] 优化播放器进度条拖动体验
+- [x] 代码审查与重构优化</think><tool_call>Read<arg_key>file_path</arg_key><arg_value>/opt/cloud/data/claude-code/music-g51-claude-code/README.md
 
 ### v0.2.0 (MINOR) - 歌单与歌手
 - 歌单管理 (创建/删除/编辑歌单, 歌单详情页)
