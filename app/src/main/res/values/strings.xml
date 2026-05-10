@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">music-g51-claude-code</string>
+    <string name="search_hint">搜索本地音乐…</string>
+    <string name="tab_recommend">推荐</string>
+    <string name="tab_playlists">歌单</string>
+    <string name="tab_artists">歌手</string>
+    <string name="tab_albums">专辑</string>
+    <string name="home">首页</string>
+    <string name="me">我的</string>
+    <string name="all_songs">所有歌曲</string>
+    <string name="favorites">我的收藏</string>
+    <string name="recent_played">最近播放</string>
+    <string name="local_playlists">本地歌单</string>
+    <string name="no_music_found">未找到本地音乐</string>
+    <string name="permission_required">需要存储权限才能扫描音乐</string>
+    <string name="grant_permission">授予权限</string>
+    <string name="local_user">本地用户</string>
+    <string name="local_files">本地</string>
+    <string name="audiobooks">有声</string>
+    <string name="purchased">已购</string>
+    <string name="created_playlists">自建歌单</string>
+    <string name="notification_channel">音乐播放</string>
+    <string name="notification_channel_desc">音乐播放控制通知</string>
+</resources>
