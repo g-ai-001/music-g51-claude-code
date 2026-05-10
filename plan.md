@@ -4,16 +4,23 @@
 
 ### v0.1.0 (MINOR) - 基础播放功能
 - [x] 项目搭建 (Kotlin, Jetpack Compose, MVVM架构)
-- [ ] 数据层 (Room数据库, Song模型, Repository)
-- [ ] 本地音乐扫描 (MediaStore)
-- [ ] 音乐播放服务 (Media3 ExoPlayer, 前台服务, 通知栏控制)
-- [ ] 首页 (歌曲列表, 搜索, 最近播放)
-- [ ] 播放页 (封面模式, 歌词模式, 进度条, 播放控制)
-- [ ] 迷你播放器 (跨页面持久化)
-- [ ] 日志系统 (保存到getExternalFilesDir)
-- [ ] GitHub Actions CI/CD
-- [ ] 收藏功能
+- [x] 数据层 (Room数据库, Song模型, Repository)
+- [x] 本地音乐扫描 (MediaStore)
+- [x] 音乐播放服务 (Media3 ExoPlayer, 前台服务, 通知栏控制)
+- [x] 首页 (歌曲列表, 搜索, 刷新)
+- [x] 播放页 (封面模式, 歌词模式, 进度条, 播放控制)
+- [x] 迷你播放器 (跨页面持久化)
+- [x] 日志系统 (保存到getExternalFilesDir)
+- [x] GitHub Actions CI/CD
+- [x] 收藏功能
 - [ ] 歌单管理
+
+### v0.1.1 (PATCH) - 修复编译错误与代码优化
+- [ ] 修复PlayerViewModel编译错误 (Smart cast和类型不匹配)
+- [ ] 修复AndroidManifest中POST_NOTIFICATIONS权限缺失
+- [ ] 修复MusicPlaybackService前台通知未创建问题
+- [ ] 优化播放器进度条拖动体验
+- [ ] 代码审查与重构优化
 
 ### v0.2.0 (MINOR) - 歌单与歌手
 - 歌单管理 (创建/删除/编辑歌单, 歌单详情页)
