@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import com.google.common.util.concurrent.ListenableFuture
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import app.music_g51_claude_code.data.entity.Song
@@ -14,7 +16,6 @@ import app.music_g51_claude_code.data.repository.MusicRepository
 import app.music_g51_claude_code.service.MusicPlaybackService
 import app.music_g51_claude_code.utils.AppLogger
 import app.music_g51_claude_code.utils.LyricParser
-import java.util.concurrent.Future
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,18 +27,20 @@ class PlayerViewModel(
     private val _state = MutableStateFlow(PlayerState())
     val state: StateFlow<PlayerState> = _state.asStateFlow()
 
-    private var mediaControllerFuture: Future<out MediaController>? = null
+    private var mediaControllerFuture: ListenableFuture<MediaController>? = null
     private var mediaController: MediaController? = null
     private var positionJob: Job? = null
     private var lyricJob: Job? = null
 
     fun connectController(context: Context) {
         val sessionToken = SessionToken(context, ComponentName(context, MusicPlaybackService::class.java))
-        mediaControllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
-        mediaControllerFuture?.addListener({
+        val future = MediaController.Builder(context, sessionToken).buildAsync()
+        mediaControllerFuture = future
+        future.addListener({
             try {
-                mediaController = mediaControllerFuture?.get()
-                mediaController?.addListener(playerListener)
+                val controller = future.get()
+                mediaController = controller
+                controller.addListener(playerListener)
                 startPositionTracking()
             } catch (e: Exception) {
                 AppLogger.e("PlayerViewModel", "Failed to connect media controller", e)
@@ -51,7 +54,11 @@ class PlayerViewModel(
         mediaController?.removeListener(playerListener)
         mediaController?.release()
         mediaController = null
-        MediaController.releaseFuture(mediaControllerFuture)
+        val future = mediaControllerFuture
+        if (future != null) {
+            MediaController.releaseFuture(future)
+        }
+        mediaControllerFuture = null
     }
 
     fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
@@ -63,7 +70,7 @@ class PlayerViewModel(
                 .setUri(s.path)
                 .setMediaId(s.id.toString())
                 .setMediaMetadata(
-                    androidx.media3.common.MediaMetadata.Builder()
+                    MediaMetadata.Builder()
                         .setTitle(s.title)
                         .setArtist(s.artist)
                         .setAlbumTitle(s.album)
@@ -112,7 +119,12 @@ class PlayerViewModel(
     }
 
     fun seekTo(position: Long) {
+        _state.value = _state.value.copy(isSeeking = false)
         mediaController?.seekTo(position)
+    }
+
+    fun onSeeking(position: Long) {
+        _state.value = _state.value.copy(position = position, isSeeking = true)
     }
 
     fun toggleFavorite() {
@@ -135,9 +147,7 @@ class PlayerViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val lrcContent = LyricParser.findLrcForSong(song.path)
             val lines = if (lrcContent != null) LyricParser.parseLrc(lrcContent) else emptyList()
-            withContext(Dispatchers.Main) {
-                _state.value = _state.value.copy(lyrics = lines, currentLyricIndex = -1)
-            }
+            _state.value = _state.value.copy(lyrics = lines, currentLyricIndex = -1)
         }
     }
 
@@ -149,33 +159,22 @@ class PlayerViewModel(
                 if (controller.isPlaying) {
                     val pos = controller.currentPosition
                     val dur = controller.duration.coerceAtLeast(0L)
-                    val idx = controller.currentMediaItemIndex
 
-                    _state.value = _state.value.copy(
-                        position = pos,
-                        duration = dur,
-                        isPlaying = true,
-                        currentIndex = idx
-                    )
+                    if (!_state.value.isSeeking) {
+                        _state.value = _state.value.copy(
+                            position = pos,
+                            duration = dur,
+                            isPlaying = true
+                        )
+                    } else {
+                        _state.value = _state.value.copy(duration = dur, isPlaying = true)
+                    }
 
                     val lyrics = _state.value.lyrics
-                    if (lyrics.isNotEmpty()) {
+                    if (lyrics.isNotEmpty() && !_state.value.isSeeking) {
                         val lyricIdx = LyricParser.findCurrentLine(lyrics, pos)
                         if (lyricIdx != _state.value.currentLyricIndex) {
                             _state.value = _state.value.copy(currentLyricIndex = lyricIdx)
-                        }
-                    }
-
-                    if (idx >= 0 && idx < _state.value.playlist.size) {
-                        val currentId = _state.value.currentSong?.id
-                        val newSong = _state.value.playlist[idx]
-                        if (currentId != newSong.id) {
-                            _state.value = _state.value.copy(currentSong = newSong)
-                            loadLyrics(newSong)
-                            viewModelScope.launch {
-                                val isFav = repository.isFavorite(newSong.id)
-                                _state.value = _state.value.copy(isFavorite = isFav)
-                            }
                         }
                     }
                 } else {
