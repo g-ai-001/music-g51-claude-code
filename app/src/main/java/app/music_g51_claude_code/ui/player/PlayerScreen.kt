@@ -10,7 +10,13 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.music_g51_claude_code.data.entity.Song
 import app.music_g51_claude_code.utils.LyricLine
+import app.music_g51_claude_code.utils.formatDuration
 import app.music_g51_claude_code.viewmodel.PlayerState
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
@@ -264,8 +271,8 @@ private fun CoverMode(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(formatPlayerTime(position), color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
-            Text(formatPlayerTime(duration), color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
+            Text(formatDuration(position), color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
+            Text(formatDuration(duration), color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.labelSmall)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -394,11 +401,4 @@ private fun BottomControls(
             )
         )
     }
-}
-
-private fun formatPlayerTime(ms: Long): String {
-    val totalSec = ms / 1000
-    val min = totalSec / 60
-    val sec = totalSec % 60
-    return String.format("%02d:%02d", min, sec)
 }

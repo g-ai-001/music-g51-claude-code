@@ -11,7 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.music_g51_claude_code.data.entity.Song
-import app.music_g51_claude_code.ui.home.SongItem
+import app.music_g51_claude_code.ui.components.DetailHeader
+import app.music_g51_claude_code.ui.components.SongItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,31 +33,13 @@ fun ArtistDetailScreen(
             }
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Surface(
-                modifier = Modifier.size(64.dp),
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Icon(
-                    Icons.Default.Person,
-                    contentDescription = null,
-                    modifier = Modifier.padding(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Column(modifier = Modifier.align(androidx.compose.ui.Alignment.CenterVertically)) {
-                Text(artist, style = MaterialTheme.typography.titleLarge)
-                Text("${songs.size} 首歌曲", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-            }
-        }
+        DetailHeader(
+            title = artist,
+            subtitle = "${songs.size} 首歌曲",
+            icon = Icons.Default.Person
+        )
 
-        Divider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(songs, key = { it.id }) { song ->
