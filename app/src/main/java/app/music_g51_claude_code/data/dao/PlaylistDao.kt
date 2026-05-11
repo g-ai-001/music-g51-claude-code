@@ -32,4 +32,7 @@ interface PlaylistDao {
 
     @Query("SELECT COUNT(*) FROM playlist_song_map WHERE playlistId = :playlistId")
     suspend fun getSongCountForPlaylist(playlistId: Long): Int
+
+    @Query("DELETE FROM playlist_song_map WHERE songId NOT IN (:validSongIds)")
+    suspend fun deleteOrphanRefs(validSongIds: List<Long>)
 }

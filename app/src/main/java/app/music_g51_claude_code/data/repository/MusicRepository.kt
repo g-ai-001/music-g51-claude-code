@@ -19,8 +19,11 @@ class MusicRepository private constructor(context: Context) {
 
     suspend fun scanAndSync() {
         val songs = MediaScanner.scanMusic(appContext)
+        val newIds = songs.map { it.id }.toSet()
         songDao.deleteAll()
         songDao.insertAll(songs)
+        favoriteDao.deleteOrphans(newIds)
+        playlistDao.deleteOrphanRefs(newIds)
         AppLogger.i("MusicRepository", "Synced ${songs.size} songs to DB")
     }
 

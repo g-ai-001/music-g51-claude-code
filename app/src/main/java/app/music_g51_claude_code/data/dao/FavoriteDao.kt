@@ -19,4 +19,7 @@ interface FavoriteDao {
 
     @Query("SELECT COUNT(*) FROM favorites")
     suspend fun count(): Int
+
+    @Query("DELETE FROM favorites WHERE songId NOT IN (:validSongIds)")
+    suspend fun deleteOrphans(validSongIds: List<Long>)
 }

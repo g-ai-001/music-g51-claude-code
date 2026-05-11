@@ -1,6 +1,7 @@
 package app.music_g51_claude_code.utils
 
 import android.content.Context
+import android.util.Log
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
@@ -11,7 +12,9 @@ import java.util.Locale
 object AppLogger {
     private var logFile: File? = null
     private const val MAX_LOG_SIZE = 5 * 1024 * 1024L
+    private const val TAG = "AppLogger"
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+    private val lock = Any()
 
     fun init(context: Context) {
         val logDir = context.getExternalFilesDir(null)
@@ -34,16 +37,21 @@ object AppLogger {
     private fun write(level: String, tag: String, msg: String, throwable: Throwable? = null) {
         val file = logFile ?: return
         try {
-            FileWriter(file, true).use { writer ->
-                val timestamp = dateFormat.format(Date())
-                writer.append("[$timestamp] $level/$tag: $msg\n")
-                throwable?.let {
-                    val pw = PrintWriter(writer)
-                    it.printStackTrace(pw)
-                    pw.flush()
+            synchronized(lock) {
+                rotateLogIfNeeded()
+                FileWriter(file, true).use { writer ->
+                    val timestamp = dateFormat.format(Date())
+                    writer.append("[$timestamp] $level/$tag: $msg\n")
+                    throwable?.let {
+                        val pw = PrintWriter(writer)
+                        it.printStackTrace(pw)
+                        pw.flush()
+                    }
                 }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to write log", e)
+        }
     }
 
     fun d(tag: String, msg: String) = write("DEBUG", tag, msg)

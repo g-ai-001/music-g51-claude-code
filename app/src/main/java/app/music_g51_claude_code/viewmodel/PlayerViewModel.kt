@@ -20,6 +20,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class PlayerViewModel(
     private val repository: MusicRepository
@@ -88,12 +89,12 @@ class PlayerViewModel(
 
         viewModelScope.launch {
             val isFav = repository.isFavorite(song.id)
-            _state.value = _state.value.copy(
+            _state.update { it.copy(
                 currentSong = song,
                 playlist = playlist,
                 currentIndex = index,
                 isFavorite = isFav
-            )
+            ) }
         }
 
         AppLogger.i("PlayerViewModel", "Playing: ${song.title}")
@@ -119,12 +120,12 @@ class PlayerViewModel(
     }
 
     fun seekTo(position: Long) {
-        _state.value = _state.value.copy(isSeeking = false)
+        _state.update { it.copy(isSeeking = false) }
         mediaController?.seekTo(position)
     }
 
     fun onSeeking(position: Long) {
-        _state.value = _state.value.copy(position = position, isSeeking = true)
+        _state.update { it.copy(position = position, isSeeking = true) }
     }
 
     fun toggleFavorite() {
@@ -135,19 +136,19 @@ class PlayerViewModel(
             } else {
                 repository.addFavorite(song.id)
             }
-            _state.value = _state.value.copy(isFavorite = !_state.value.isFavorite)
+            _state.update { it.copy(isFavorite = !it.isFavorite) }
         }
     }
 
     fun toggleLyrics() {
-        _state.value = _state.value.copy(showLyrics = !_state.value.showLyrics)
+        _state.update { it.copy(showLyrics = !it.showLyrics) }
     }
 
     private fun loadLyrics(song: Song) {
         viewModelScope.launch(Dispatchers.IO) {
             val lrcContent = LyricParser.findLrcForSong(song.path)
             val lines = if (lrcContent != null) LyricParser.parseLrc(lrcContent) else emptyList()
-            _state.value = _state.value.copy(lyrics = lines, currentLyricIndex = -1)
+            _state.update { it.copy(lyrics = lines, currentLyricIndex = -1) }
         }
     }
 
@@ -161,33 +162,33 @@ class PlayerViewModel(
                     val dur = controller.duration.coerceAtLeast(0L)
 
                     if (!_state.value.isSeeking) {
-                        _state.value = _state.value.copy(
+                        _state.update { it.copy(
                             position = pos,
                             duration = dur,
                             isPlaying = true
-                        )
+                        ) }
                     } else {
-                        _state.value = _state.value.copy(duration = dur, isPlaying = true)
+                        _state.update { it.copy(duration = dur, isPlaying = true) }
                     }
 
                     val lyrics = _state.value.lyrics
                     if (lyrics.isNotEmpty() && !_state.value.isSeeking) {
                         val lyricIdx = LyricParser.findCurrentLine(lyrics, pos)
                         if (lyricIdx != _state.value.currentLyricIndex) {
-                            _state.value = _state.value.copy(currentLyricIndex = lyricIdx)
+                            _state.update { it.copy(currentLyricIndex = lyricIdx) }
                         }
                     }
                 } else {
-                    _state.value = _state.value.copy(isPlaying = false)
+                    _state.update { it.copy(isPlaying = false) }
                 }
-                delay(200)
+                delay(300)
             }
         }
     }
 
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            _state.value = _state.value.copy(isPlaying = isPlaying)
+            _state.update { it.copy(isPlaying = isPlaying) }
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -195,11 +196,11 @@ class PlayerViewModel(
                 val idx = mediaController?.currentMediaItemIndex ?: return
                 if (idx < _state.value.playlist.size) {
                     val song = _state.value.playlist[idx]
-                    _state.value = _state.value.copy(currentSong = song, currentIndex = idx)
+                    _state.update { it.copy(currentSong = song, currentIndex = idx) }
                     loadLyrics(song)
                     viewModelScope.launch {
                         val isFav = repository.isFavorite(song.id)
-                        _state.value = _state.value.copy(isFavorite = isFav)
+                        _state.update { it.copy(isFavorite = isFav) }
                     }
                 }
             }

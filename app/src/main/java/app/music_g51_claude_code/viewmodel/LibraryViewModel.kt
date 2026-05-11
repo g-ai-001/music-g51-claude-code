@@ -10,6 +10,7 @@ import app.music_g51_claude_code.utils.AppLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class LibraryState(
@@ -30,20 +31,20 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     val state: StateFlow<LibraryState> = _state.asStateFlow()
 
     fun setPermissionGranted(granted: Boolean) {
-        _state.value = _state.value.copy(hasPermission = granted)
+        _state.update { it.copy(hasPermission = granted) }
         if (granted) refreshLibrary()
     }
 
     fun refreshLibrary() {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
             try {
                 repository.scanAndSync()
                 loadAll()
             } catch (e: Exception) {
                 AppLogger.e("LibraryViewModel", "Failed to refresh library", e)
             }
-            _state.value = _state.value.copy(isLoading = false)
+            _state.update { it.copy(isLoading = false) }
         }
     }
 
@@ -52,48 +53,37 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         val playlists = repository.getAllPlaylists()
         val artists = repository.getAllArtists()
         val albums = repository.getAllAlbums()
-        _state.value = _state.value.copy(
+        val query = _state.value.searchQuery
+        _state.update { it.copy(
             songs = songs,
-            filteredSongs = if (_state.value.searchQuery.isBlank()) songs
-            else songs.filter { s ->
-                s.title.contains(_state.value.searchQuery, true) ||
-                s.artist.contains(_state.value.searchQuery, true) ||
-                s.album.contains(_state.value.searchQuery, true)
-            },
+            filteredSongs = filterSongs(songs, query),
             playlists = playlists,
             artists = artists,
             albums = albums
-        )
+        ) }
     }
 
-    fun loadSongs() {
-        viewModelScope.launch {
-            val songs = repository.getAllSongs()
-            _state.value = _state.value.copy(
-                songs = songs,
-                filteredSongs = if (_state.value.searchQuery.isBlank()) songs
-                else songs.filter { s ->
-                    s.title.contains(_state.value.searchQuery, true) ||
-                    s.artist.contains(_state.value.searchQuery, true) ||
-                    s.album.contains(_state.value.searchQuery, true)
-                }
-            )
+    private fun filterSongs(songs: List<Song>, query: String): List<Song> {
+        if (query.isBlank()) return songs
+        return songs.filter { s ->
+            s.title.contains(query, true) ||
+            s.artist.contains(query, true) ||
+            s.album.contains(query, true)
         }
     }
 
     fun search(query: String) {
-        _state.value = _state.value.copy(searchQuery = query)
+        _state.update { it.copy(searchQuery = query) }
         viewModelScope.launch {
-            val results = if (query.isBlank()) repository.getAllSongs()
-            else repository.searchSongs(query)
-            _state.value = _state.value.copy(filteredSongs = results)
+            val results = filterSongs(repository.getAllSongs(), query)
+            _state.update { it.copy(filteredSongs = results) }
         }
     }
 
     fun loadFavorites() {
         viewModelScope.launch {
             val favs = repository.getFavoriteSongs()
-            _state.value = _state.value.copy(favoriteSongs = favs)
+            _state.update { it.copy(favoriteSongs = favs) }
         }
     }
 
@@ -150,10 +140,8 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
         return repository.getSongsByAlbum(album)
     }
 
-    private fun loadPlaylists() {
-        viewModelScope.launch {
-            val playlists = repository.getAllPlaylists()
-            _state.value = _state.value.copy(playlists = playlists)
-        }
+    private suspend fun loadPlaylists() {
+        val playlists = repository.getAllPlaylists()
+        _state.update { it.copy(playlists = playlists) }
     }
 }
