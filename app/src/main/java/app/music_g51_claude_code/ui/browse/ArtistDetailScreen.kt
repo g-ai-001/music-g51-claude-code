@@ -56,7 +56,7 @@ fun ArtistDetailScreen(
             }
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(songs, key = { it.id }) { song ->

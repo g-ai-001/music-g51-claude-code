@@ -1,6 +1,5 @@
 package app.music_g51_claude_code.data.entity
 
-import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
