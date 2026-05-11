@@ -1,19 +1,15 @@
 package app.music_g51_claude_code.service
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.*
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import app.music_g51_claude_code.MainActivity
 import app.music_g51_claude_code.utils.AppLogger
 
 class MusicPlaybackService : MediaSessionService() {
@@ -21,7 +17,6 @@ class MusicPlaybackService : MediaSessionService() {
 
     companion object {
         private const val CHANNEL_ID = "music_playback_channel"
-        private const val NOTIFICATION_ID = 1
     }
 
     override fun onCreate() {
@@ -71,7 +66,7 @@ class MusicPlaybackService : MediaSessionService() {
             ).apply {
                 description = "音乐播放控制通知"
                 setShowBadge(false)
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                lockscreenVisibility = 1 // VISIBILITY_PUBLIC
             }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
