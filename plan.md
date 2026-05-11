@@ -32,11 +32,11 @@
 - [x] 升级版本号至0.2.0
 
 ### v0.2.1 (PATCH) - 修复编译错误
-- [ ] 修复HorizontalDivider未解析引用 (AlbumDetailScreen.kt, ArtistDetailScreen.kt)
-- [ ] 修复HomeScreen.kt中Material Icons未导入 (Add, QueueMusic, Person, ChevronRight, Album)
-- [ ] 修复Theme.kt中Typography()调用错误
-- [ ] 移除未使用的import (MusicRepository.kt, Song.kt)
-- [ ] 升级版本号至0.2.1
+- [x] 修复HorizontalDivider未解析引用 (AlbumDetailScreen.kt, ArtistDetailScreen.kt)
+- [x] 修复HomeScreen.kt中Material Icons未导入 (Add, QueueMusic, Person, ChevronRight, Album)
+- [x] 修复Theme.kt中Typography()调用错误
+- [x] 移除未使用的import (MusicRepository.kt, Song.kt)
+- [x] 升级版本号至0.2.1
 
 ### v0.3.0 (MINOR) - 体验优化
 - 播放模式 (顺序/随机/单曲循环)
