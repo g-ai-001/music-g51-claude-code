@@ -40,7 +40,9 @@ import app.music_g51_claude_code.ui.theme.MusicPlayerTheme
 import app.music_g51_claude_code.ui.theme.ThemeMode
 import app.music_g51_claude_code.viewmodel.LibraryViewModel
 import app.music_g51_claude_code.viewmodel.PlayerViewModel
+import app.music_g51_claude_code.viewmodel.ThemeViewModel
 import java.net.URLDecoder
+import java.net.URLEncoder
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     data object Home : Screen("home", "首页", Icons.Default.Home)
@@ -55,9 +57,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var themeMode by remember { mutableStateOf(ThemeMode.DARK) }
+            val themeViewModel: ThemeViewModel = viewModel()
+            val themeMode by themeViewModel.themeMode.collectAsState()
             MusicPlayerTheme(themeMode = themeMode) {
-                MainContent(themeMode = themeMode, onThemeChange = { themeMode = it })
+                MainContent(
+                    themeMode = themeMode,
+                    onThemeChange = { themeViewModel.setThemeMode(it) }
+                )
             }
         }
     }
@@ -80,13 +86,7 @@ fun MainContent(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
     val showPlayer = currentRoute == Screen.Player.route
 
     var hasPermission by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED
-            } else {
-                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-            }
-        )
+        mutableStateOf(checkStoragePermission(context))
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -104,12 +104,7 @@ fun MainContent(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
             libraryViewModel.setPermissionGranted(true)
             libraryViewModel.refreshLibrary()
         } else {
-            val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Manifest.permission.READ_MEDIA_AUDIO
-            } else {
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            }
-            permissionLauncher.launch(perm)
+            permissionLauncher.launch(getStoragePermission())
         }
     }
 
@@ -184,10 +179,10 @@ fun MainContent(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
                         navController.navigate("playlist/${playlist.id}")
                     },
                     onArtistClick = { artist ->
-                        navController.navigate("artist/${java.net.URLEncoder.encode(artist, "UTF-8")}")
+                        navController.navigate("artist/${URLEncoder.encode(artist, "UTF-8")}")
                     },
                     onAlbumClick = { album ->
-                        navController.navigate("album/${java.net.URLEncoder.encode(album, "UTF-8")}")
+                        navController.navigate("album/${URLEncoder.encode(album, "UTF-8")}")
                     },
                     onCreatePlaylist = {
                         libraryViewModel.createPlaylist("新建歌单")
@@ -318,5 +313,21 @@ fun MainContent(themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
                 )
             }
         }
+    }
+}
+
+private fun checkStoragePermission(context: android.content.Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_GRANTED
+    } else {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    }
+}
+
+private fun getStoragePermission(): String {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_AUDIO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
     }
 }

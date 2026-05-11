@@ -28,7 +28,7 @@
 - [x] 歌单详情页 (查看歌单歌曲, 添加歌曲到歌单, 从歌单移除歌曲)
 - [x] 歌手浏览页 (歌手列表, 歌手详情页)
 - [x] 专辑浏览页 (专辑列表, 专辑详情页)
-- [ ] 深色/浅色模式切换 (跟随系统/手动切换)
+- [~] 深色/浅色模式切换 (跟随系统/手动切换) → 移至v0.2.2完善
 - [x] 升级版本号至0.2.0
 
 ### v0.2.1 (PATCH) - 修复编译错误
@@ -37,6 +37,14 @@
 - [x] 修复Theme.kt中Typography()调用错误
 - [x] 移除未使用的import (MusicRepository.kt, Song.kt)
 - [x] 升级版本号至0.2.1
+
+### v0.2.2 (PATCH) - 重构优化
+- [ ] 提取共享组件: SongItem/formatDuration移至共享模块, 合并ArtistDetailScreen/AlbumDetailScreen布局
+- [ ] 修复数据丢失: scanAndSync()删除歌曲前保留收藏和歌单关联
+- [ ] 线程安全: PlayerViewModel使用StateFlow.update(), AppLogger线程安全
+- [ ] 清理代码: 移除未使用的imports/常量/权限, 修复deprecated API
+- [ ] 完善深色/浅色模式: DataStore持久化主题设置
+- [ ] 升级版本号至0.2.2
 
 ### v0.3.0 (MINOR) - 体验优化
 - 播放模式 (顺序/随机/单曲循环)
